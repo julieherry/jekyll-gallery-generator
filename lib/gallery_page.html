@@ -21,9 +21,10 @@ layout: page
 <h1><a href="/{{ site.gallery.dir }}">{{ page.title }}</a></h1>
 <hr />
 {% for image in page.images %}
+<h1>{{ image.title}}</h1>
     <div class="gallery-image-wrapper">
         <a name="{{ image.name }}"></a>
-        <a href="{{ image.name }}"{% if site.gallery.lightbox %} rel="lightbox[{{ page.gallery }}]"{% endif %}>
+        <a href="{{ image.src }}"{% if site.gallery.lightbox %} rel="lightbox[{{ page.gallery }}]"{% endif %}>
             <img class="gallery-image" src="thumbs/{{ image.name }}" />
         </a>
     </div>

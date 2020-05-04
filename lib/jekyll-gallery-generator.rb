@@ -11,10 +11,14 @@ module Jekyll
   class GalleryImage
     include Comparable
     attr_accessor :name
+    attr_accessor :title
+    attr_accessor :dimension
     attr_accessor :path
 
-    def initialize(name, base)
+    def initialize(name, base, dimension, title)
       @name = name
+      @dimension = dimension
+      @title = title
       @path = File.join(base, name)
     end
 
@@ -54,6 +58,8 @@ module Jekyll
       # Liquid hates symbol keys. Gotta stringify them
       return {
         'name' => @name,
+        'title' => @title,
+        'dimension' => @dimension,
         'src' => @name,
         'date_time' => @date_time,
         'exif' => @exif && @exif.to_hash.collect{|k,v| [k.to_s, v]}.to_h,
@@ -127,6 +133,7 @@ module Jekyll
     attr_reader :hidden
 
     def initialize(site, base, dir, gallery_name)
+    puts "#{site} #{base} #{dir} #{gallery_name}"
       @site = site
       @base = base
       @dest_dir = dir.gsub("source/", "")
@@ -163,6 +170,7 @@ module Jekyll
       gallery_title_prefix = config["title_prefix"] || "Photos: "
       gallery_name = gallery_name.gsub(/[_-]/, " ").gsub(/\w+/) {|word| word.capitalize}
       begin
+        old_gallery_name = gallery_name
         gallery_name = gallery_config["name"] || gallery_name
       rescue Exception
       end
@@ -184,7 +192,11 @@ module Jekyll
       entries.each_with_index do |name, i|
         next if name.chars.first == "."
         next unless name.downcase().end_with?(*$image_extensions)
-        image = GalleryImage.new(name, dir)
+        puts "Generating:Image::#{old_gallery_name.downcase}:#{name}"
+        title = config["galleries"][old_gallery_name.downcase]["images"][name.downcase]["title"]
+        puts "Generating:Image::Ok"
+        dimension = config["galleries"][old_gallery_name.downcase]["images"][name.downcase]["dimension"]
+        image = GalleryImage.new(name, dir, dimension, title)
         @images.push(image)
         date_times[name] = image.date_time
         @site.static_files << GalleryFile.new(site, base, File.join(@dest_dir, "thumbs"), name)
@@ -253,6 +265,7 @@ module Jekyll
       site.static_files = @site.static_files
       self.data["images"] = @images
       best_image = nil
+      puts "#{@images}"
       if @images.length > 0
         best_image = @images[0].name
       end
